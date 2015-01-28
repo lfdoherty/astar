@@ -5,12 +5,15 @@ use std::intrinsics::transmute;
 use std::collections::{BinaryHeap, HashMap};
 use std::cell::RefCell;
 use std::hash::Hash;
+use std::hash;
 
 /// The place where all of the information about the
 /// current A* process is held.
 /// N is the type of the user-provided state, and
 /// C is the type of the user-provided cost.
-pub struct AstarState<'a, N: 'a, C: 'a> {
+pub struct AstarState<'a, N, C: 'a, H: hash::Hasher+hash::Writer> 
+where N: 'a+Hash<H>
+{
     /// The arena that all nodes are allocated from.
     pub arena: TypedArena<Node<'a, N, C>>,
     /// The priority queue that orders nodes in increasing
@@ -22,9 +25,11 @@ pub struct AstarState<'a, N: 'a, C: 'a> {
     pub seen: RefCell<HashMap<DumbNode<'a, N>, &'a Node<'a, N, C>>>,
 }
 
-impl <'a, N, C> AstarState<'a, N, C>
-where N: Hash + PartialEq, C: PartialOrd {
-    pub fn new() -> AstarState<'a, N, C> {
+impl <'a, N, C, H> AstarState<'a, N, C, H>
+where H: hash::Hasher+hash::Writer,
+      N: PartialEq+Hash<H>, C: PartialOrd 
+{
+    pub fn new() -> AstarState<'a, N, C, H> {
         AstarState {
             arena: TypedArena::new(),
             queue: RefCell::new(BinaryHeap::new()),

@@ -1,8 +1,8 @@
-#![feature(if_let, tuple_indexing)]
 extern crate arena;
 extern crate num;
 
 use std::hash::Hash;
+use std::hash;
 use std::collections::RingBuf;
 use num::Zero;
 
@@ -23,7 +23,7 @@ mod two_dim;
 /// be solved without any more information.
 /// N is the type of one of the search-states and
 /// C is the type of the cost to get from one state to another.
-pub trait SearchProblem<N, C, I: Iterator<(N, C)>> {
+pub trait SearchProblem<N, C, I: Iterator<Item=(N, C)>> {
     /// A state representing the start of the search.
     #[inline(always)]
     fn start(&self) -> N;
@@ -42,18 +42,18 @@ pub trait SearchProblem<N, C, I: Iterator<(N, C)>> {
     /// This method is used if an estimated length of the path
     /// is available.
     #[inline(always)]
-    fn estimate_length(&self) -> Option<uint> { None }
+    fn estimate_length(&self) -> Option<usize> { None }
 }
 
 /// Perform an A* search on the provided search-problem.
-pub fn astar<N, C, I, S: SearchProblem<N, C, I>>(s: S) -> Option<RingBuf<N>>
-where N: Hash + PartialEq,
+pub fn astar<N, C, I, S: SearchProblem<N, C, I>, H: hash::Hasher+hash::Writer>(s: S) -> Option<RingBuf<N>>
+where N: Hash<H> + PartialEq,
       C: PartialOrd + Zero + Clone,
-      I: Iterator<(N, C)> {
+      I: Iterator<Item=(N, C)> {
     // Start out with a search-state that contains the beginning
     // node with cost zero.  Heuristic cost is also zero, but  this
     // shouldn't matter as it will be removed from the priority queue instantly.
-    let state: state::AstarState<N, C> = state::AstarState::new();
+    let state: state::AstarState<N, C, H> = state::AstarState::new();
     let est_length = s.estimate_length().unwrap_or(16);
     state.add(s.start(), Zero::zero(), Zero::zero());
     let mut end;

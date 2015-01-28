@@ -39,8 +39,8 @@ for TwoDimSearchProblemWrapper<'a, Rsp> {
         (max(abs(dx), abs(dy)) * 2) as u32
     }
 
-    fn estimate_length(&self) -> Option<uint> {
-        Some(self.heuristic(&self.start()) as uint)
+    fn estimate_length(&self) -> Option<usize> {
+        Some(self.heuristic(&self.start()) as usize)
     }
 
     fn neighbors(&self, node: &(i32, i32)) -> IntoIter<((i32, i32), u32)> {
