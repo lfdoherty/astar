@@ -1,5 +1,5 @@
 use std::collections::RingBuf;
-use std::vec::MoveItems;
+use std::vec::IntoIter;
 
 use super::{SearchProblem, astar};
 
@@ -18,7 +18,7 @@ pub trait TwoDimSearchProblem {
     fn cut_corners(&self) -> bool { false }
 }
 
-impl <'a, Rsp: TwoDimSearchProblem> SearchProblem<(i32, i32), u32, MoveItems<((i32,i32), u32)>>
+impl <'a, Rsp: TwoDimSearchProblem> SearchProblem<(i32, i32), u32, IntoIter<((i32,i32), u32)>>
 for TwoDimSearchProblemWrapper<'a, Rsp> {
     fn start(&self) -> (i32, i32) {
         self.start
@@ -43,7 +43,7 @@ for TwoDimSearchProblemWrapper<'a, Rsp> {
         Some(self.heuristic(&self.start()) as uint)
     }
 
-    fn neighbors(&self, node: &(i32, i32)) -> MoveItems<((i32, i32), u32)> {
+    fn neighbors(&self, node: &(i32, i32)) -> IntoIter<((i32, i32), u32)> {
         let mut v = vec![];
         let (x, y) = *node;
         let ap = (x + 0, y + 1);
